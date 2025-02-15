@@ -5,12 +5,15 @@ import android.os.Bundle
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android_app.adapters.CarouselAdapter
+import com.example.android_app.adapters.ListAdapter
 import com.example.android_app.databinding.ActivityMainBinding
 import com.example.android_app.models.CarouselItem
+import com.example.android_app.models.ListItem
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -21,17 +24,46 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initCarousel()
+        initList()
     }
 
+    private fun initList() {
+        val originalList = listOf(
+            ListItem(R.mipmap.test_image, "Label 1"),
+            ListItem(R.mipmap.test_image, "Label 2"),
+            ListItem(R.mipmap.test_image, "Label 3")
+        )
+
+        val mutableList = originalList.toMutableList()
+
+        val adapter = ListAdapter(mutableList)
+        binding.listRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.listRecyclerView.adapter = adapter
+
+        binding.searchBar.addTextChangedListener { text ->
+            val searchText = text?.toString()?.trim() ?: ""
+
+            val filteredList = if (searchText.isNotEmpty()) {
+                originalList.filter { it.title.contains(searchText, ignoreCase = true) }
+            } else {
+                originalList
+            }
+
+            mutableList.clear()
+            mutableList.addAll(filteredList)
+            adapter.notifyDataSetChanged()
+        }
+    }
 
     private fun initCarousel() {
         val carouselItems = listOf(
-            CarouselItem(R.drawable.ic_launcher_background),
-            CarouselItem(R.drawable.ic_launcher_foreground),
-            CarouselItem(R.mipmap.ic_launcher)
+            CarouselItem(R.mipmap.test_image),
+            CarouselItem(R.mipmap.test_image),
+            CarouselItem(R.mipmap.test_image)
         )
 
-        binding.carouselRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.carouselRecyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.carouselRecyclerView.adapter = CarouselAdapter(carouselItems)
 
         val snapHelper = LinearSnapHelper()
